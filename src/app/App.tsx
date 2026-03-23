@@ -1,6 +1,7 @@
 import { Button } from './components/ui/button';
 import { motion } from 'motion/react';
 import { InteractiveNodes } from './components/InteractiveNodes';
+import logo from 'figma:asset/3225d8230897cf47eeaf025e0f9b01fe3a0d1946.png';
 
 export default function App() {
   return (
@@ -29,54 +30,24 @@ export default function App() {
           transition={{ duration: 0.6 }}
           style={{ borderBottom: '1px solid rgba(0, 0, 0, 0.1)', backgroundColor: 'rgba(255, 255, 255, 0.95)' }}
         >
-          <div className="max-w-6xl mx-auto px-6 py-5">
+          <div className="max-w-6xl mx-auto px-6 py-4">
             <div className="flex items-center gap-3">
               {/* Logo */}
-              <motion.div
+              <motion.img
+                src={logo}
+                alt="RELAY"
                 initial={{ scale: 0, opacity: 0 }}
                 animate={{ scale: 1, opacity: 1 }}
                 transition={{ duration: 0.6, type: "spring", stiffness: 120 }}
-                className="w-10 h-10 rounded-lg flex items-center justify-center"
-                style={{ backgroundColor: 'rgba(42, 157, 143, 0.15)' }}
-              >
-                <svg 
-                  width="24" 
-                  height="24" 
-                  viewBox="0 0 24 24" 
-                  fill="none" 
-                  xmlns="http://www.w3.org/2000/svg"
-                >
-                  {/* Voice wave icon */}
-                  <path 
-                    d="M12 3v18M8 6v12M16 6v12M4 9v6M20 9v6" 
-                    stroke="#2A9D8F" 
-                    strokeWidth="2" 
-                    strokeLinecap="round"
-                  />
-                </svg>
-              </motion.div>
-              
-              {/* RELAY Text - slides out from logo */}
-              <motion.span 
-                initial={{ x: -60, opacity: 0 }}
-                animate={{ x: 0, opacity: 1 }}
-                transition={{ 
-                  duration: 0.8, 
-                  type: "spring", 
-                  stiffness: 100,
-                  delay: 0.4
-                }}
-                className="text-2xl font-semibold" 
-                style={{ color: '#0A0F1E', display: 'inline-block' }}
-              >
-                RELAY
-              </motion.span>
+                className="h-10"
+                style={{ objectFit: 'contain' }}
+              />
             </div>
           </div>
         </motion.header>
 
         {/* Hero Section */}
-        <section className="py-24 px-6" style={{ backgroundColor: 'rgba(42, 157, 143, 0.08)' }}>
+        <section className="py-24 px-6" style={{ backgroundColor: 'rgba(45, 90, 158, 0.05)' }}>
           <div className="max-w-4xl mx-auto text-center">
             <motion.h1 
               initial={{ opacity: 0, y: 30 }}
@@ -103,9 +74,9 @@ export default function App() {
             >
               <Button 
                 size="lg" 
-                className="text-lg px-8 py-6"
+                className="text-lg px-8 py-6 transition-all hover:shadow-xl"
                 style={{ 
-                  backgroundColor: '#2A9D8F',
+                  backgroundColor: '#2D5A9E',
                   color: 'white'
                 }}
                 onClick={() => window.location.href = 'mailto:hello@getrelay.now?subject=Request%20Early%20Access'}
@@ -210,7 +181,7 @@ export default function App() {
                   whileHover={{ scale: 1.1, rotate: 360 }}
                   transition={{ duration: 0.6 }}
                   className="w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-6"
-                  style={{ backgroundColor: '#2A9D8F' }}
+                  style={{ backgroundColor: '#2D5A9E' }}
                 >
                   <span className="text-2xl font-bold text-white">1</span>
                 </motion.div>
@@ -234,7 +205,7 @@ export default function App() {
                   whileHover={{ scale: 1.1, rotate: 360 }}
                   transition={{ duration: 0.6 }}
                   className="w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-6"
-                  style={{ backgroundColor: '#2A9D8F' }}
+                  style={{ backgroundColor: '#2D5A9E' }}
                 >
                   <span className="text-2xl font-bold text-white">2</span>
                 </motion.div>
@@ -258,7 +229,7 @@ export default function App() {
                   whileHover={{ scale: 1.1, rotate: 360 }}
                   transition={{ duration: 0.6 }}
                   className="w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-6"
-                  style={{ backgroundColor: '#2A9D8F' }}
+                  style={{ backgroundColor: '#2D5A9E' }}
                 >
                   <span className="text-2xl font-bold text-white">3</span>
                 </motion.div>
@@ -274,7 +245,7 @@ export default function App() {
         </section>
 
         {/* Early Access Section */}
-        <section className="py-20 px-6" style={{ backgroundColor: 'rgba(42, 157, 143, 0.08)' }}>
+        <section className="py-20 px-6" style={{ backgroundColor: 'rgba(45, 90, 158, 0.05)' }}>
           <div className="max-w-3xl mx-auto text-center">
             <motion.h2 
               initial={{ opacity: 0, y: 30 }}
@@ -304,9 +275,9 @@ export default function App() {
             >
               <Button 
                 size="lg" 
-                className="text-lg px-8 py-6"
+                className="text-lg px-8 py-6 transition-all hover:shadow-xl"
                 style={{ 
-                  backgroundColor: '#2A9D8F',
+                  backgroundColor: '#2D5A9E',
                   color: 'white'
                 }}
                 onClick={() => window.location.href = 'mailto:hello@getrelay.now?subject=Request%20Early%20Access'}
@@ -328,7 +299,7 @@ export default function App() {
         >
           <div className="max-w-4xl mx-auto text-center">
             <p style={{ color: '#6B7280' }}>
-              Relay © 2026 · <a href="mailto:hello@getrelay.now" className="hover:underline" style={{ color: '#2A9D8F' }}>hello@getrelay.now</a> · West Vancouver, BC
+              Relay © 2026 · <a href="mailto:hello@getrelay.now" className="hover:underline" style={{ color: '#2D5A9E' }}>hello@getrelay.now</a> · West Vancouver, BC
             </p>
           </div>
         </motion.footer>

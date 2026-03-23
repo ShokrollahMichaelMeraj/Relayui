@@ -93,7 +93,7 @@ export function InteractiveNodes() {
             ctx.beginPath();
             ctx.moveTo(nodeA.x, nodeA.y);
             ctx.lineTo(nodeB.x, nodeB.y);
-            ctx.strokeStyle = `rgba(42, 157, 143, ${opacity})`;
+            ctx.strokeStyle = `rgba(45, 90, 158, ${opacity})`;
             ctx.lineWidth = 0.5;
             ctx.stroke();
           }
@@ -117,7 +117,7 @@ export function InteractiveNodes() {
         const pulseIntensity = Math.sin(time * 2 - distanceFromCenter * 0.01) * 0.3 + 0.5;
         const opacity = 0.3 + pulseIntensity * 0.5;
         
-        ctx.fillStyle = `rgba(42, 157, 143, ${opacity})`;
+        ctx.fillStyle = `rgba(45, 90, 158, ${opacity})`;
         ctx.fill();
       });
 
