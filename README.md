@@ -1,7 +1,7 @@
 
-  # One Page B2B SaaS Landing
+  # Relay
 
-  This is a code bundle for One Page B2B SaaS Landing. The original project is available at https://www.figma.com/design/j2S8343eP7tiAoZeFxfdPu/One-Page-B2B-SaaS-Landing.
+  This is a code bundle for Relay. The original project is available at https://www.figma.com/design/j2S8343eP7tiAoZeFxfdPu/Relay.
 
   ## Running the code
 
