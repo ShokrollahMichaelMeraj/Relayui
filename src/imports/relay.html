@@ -1,0 +1,925 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Relay — Hold time that works before you pick up</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Geist:wght@300;400;500;600;700;800;900&family=Geist+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+
+/* ═══════════════════════════════════════
+   THEME TOKENS — light (default)
+═══════════════════════════════════════ */
+:root {
+  --bg:         #ffffff;
+  --bg-2:       #f5f5f5;
+  --bg-3:       #efefef;
+  --surface:    #ffffff;
+  --text:       #0a0a0f;
+  --text-2:     #6b6b7b;
+  --text-3:     #9a9aaa;
+  --blue:       #2B5BE8;
+  --blue-h:     #1A3FCC;
+  --blue-pale:  #EEF2FD;
+  --blue-mid:   #c7d4f9;
+  --border:     #e5e5ea;
+  --border-2:   #d0d0da;
+  --nav-bg:     rgba(255,255,255,0.92);
+  --nav-border: #e5e5ea;
+  --cta-bg:     #080f1e;
+  --cta-text:   #f0f0f4;
+  --cta-sub:    rgba(255,255,255,0.45);
+  --shadow:     0 1px 3px rgba(0,0,0,0.08);
+  --font-display: 'Instrument Serif', serif;
+  --font-sans:    'Geist', sans-serif;
+  --font-mono:    'Geist Mono', monospace;
+}
+
+/* ═══════════════════════════════════════
+   THEME TOKENS — dark
+═══════════════════════════════════════ */
+[data-theme="dark"] {
+  --bg:         #0a0a0f;
+  --bg-2:       #111118;
+  --bg-3:       #18181f;
+  --surface:    #0a0a0f;
+  --text:       #f0f0f4;
+  --text-2:     #a0a0b0;
+  --text-3:     #505060;
+  --blue:       #4a7aff;
+  --blue-h:     #6b94ff;
+  --blue-pale:  #0d1a3a;
+  --blue-mid:   #1a2f5a;
+  --border:     rgba(255,255,255,0.07);
+  --border-2:   rgba(255,255,255,0.13);
+  --nav-bg:     rgba(10,10,15,0.9);
+  --nav-border: rgba(255,255,255,0.07);
+  --cta-bg:     #060810;
+  --cta-text:   #f0f0f4;
+  --cta-sub:    rgba(255,255,255,0.38);
+  --shadow:     0 1px 3px rgba(0,0,0,0.4);
+}
+
+/* ═══════════════════════════════════════
+   BASE
+═══════════════════════════════════════ */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-sans);
+  font-weight: 400;
+  line-height: 1.6;
+  overflow-x: hidden;
+  transition: background 0.3s, color 0.3s;
+}
+
+/* ═══════════════════════════════════════
+   NAV
+═══════════════════════════════════════ */
+nav {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 300;
+  height: 60px;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0 48px;
+  background: var(--nav-bg);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-bottom: 1px solid var(--nav-border);
+  transition: background 0.3s, border-color 0.3s;
+}
+
+/* Logo */
+.nav-logo {
+  display: flex; align-items: center; gap: 10px;
+  font-family: var(--font-sans); font-weight: 700; font-size: 17px;
+  letter-spacing: -0.4px; color: var(--text); text-decoration: none;
+  flex-shrink: 0;
+}
+.logo-icon { width: 28px; height: 28px; position: relative; flex-shrink: 0; }
+.logo-ring {
+  width: 28px; height: 28px; border-radius: 50%;
+  border: 2.5px solid transparent;
+  background: linear-gradient(135deg, #1A3FCC, #4a7aff, #7aa0ff, #1A3FCC) border-box;
+  -webkit-mask: linear-gradient(#fff 0 0) padding-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: destination-out; mask-composite: exclude;
+  position: absolute; inset: 0; transform: rotate(-20deg) scaleX(0.55);
+}
+.logo-dot {
+  width: 8px; height: 8px; background: var(--text-3); border-radius: 50%;
+  position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%);
+}
+
+/* Desktop links */
+.nav-links {
+  display: flex; gap: 28px; list-style: none;
+  align-items: center;
+}
+.nav-links a {
+  font-size: 13px; color: var(--text-2); text-decoration: none;
+  transition: color 0.2s; white-space: nowrap;
+}
+.nav-links a:hover { color: var(--text); }
+.nav-links a.active { color: var(--blue); font-weight: 500; }
+
+/* Right cluster */
+.nav-right {
+  display: flex; align-items: center; gap: 12px; flex-shrink: 0;
+}
+
+/* Theme toggle */
+.theme-toggle {
+  width: 36px; height: 36px;
+  border: 1px solid var(--border-2);
+  background: transparent;
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  border-radius: 6px;
+  transition: background 0.2s, border-color 0.2s;
+  flex-shrink: 0;
+  color: var(--text-2);
+}
+.theme-toggle:hover { background: var(--bg-2); color: var(--text); }
+.theme-toggle svg { width: 16px; height: 16px; stroke: currentColor; stroke-width: 1.5; fill: none; stroke-linecap: round; stroke-linejoin: round; transition: opacity 0.2s; }
+.icon-sun  { display: block; }
+.icon-moon { display: none; }
+[data-theme="dark"] .icon-sun  { display: none; }
+[data-theme="dark"] .icon-moon { display: block; }
+
+/* CTA button */
+.nav-cta {
+  font-family: var(--font-sans); font-size: 13px; font-weight: 500;
+  color: #fff; background: var(--blue); padding: 8px 18px;
+  text-decoration: none; border: none; cursor: pointer;
+  transition: background 0.2s, transform 0.15s; white-space: nowrap;
+}
+.nav-cta:hover { background: var(--blue-h); transform: translateY(-1px); }
+
+/* Hamburger button — hidden on desktop */
+.nav-hamburger {
+  display: none;
+  width: 36px; height: 36px;
+  background: transparent; border: 1px solid var(--border-2);
+  cursor: pointer; border-radius: 6px;
+  flex-direction: column; align-items: center; justify-content: center; gap: 5px;
+  flex-shrink: 0;
+}
+.nav-hamburger span {
+  display: block; width: 18px; height: 1.5px;
+  background: var(--text-2); border-radius: 2px;
+  transition: all 0.25s ease;
+  transform-origin: center;
+}
+/* open state */
+.nav-hamburger.open span:nth-child(1) { transform: translateY(6.5px) rotate(45deg); }
+.nav-hamburger.open span:nth-child(2) { opacity: 0; transform: scaleX(0); }
+.nav-hamburger.open span:nth-child(3) { transform: translateY(-6.5px) rotate(-45deg); }
+
+/* Mobile drawer */
+.nav-drawer {
+  display: none;
+  position: fixed; top: 60px; left: 0; right: 0; z-index: 299;
+  background: var(--nav-bg);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-bottom: 1px solid var(--nav-border);
+  padding: 16px 24px 24px;
+  flex-direction: column; gap: 4px;
+  transition: background 0.3s;
+}
+.nav-drawer.open { display: flex; }
+.nav-drawer a {
+  font-size: 15px; color: var(--text-2); text-decoration: none;
+  padding: 10px 0; border-bottom: 1px solid var(--border);
+  transition: color 0.2s;
+}
+.nav-drawer a:last-child { border-bottom: none; }
+.nav-drawer a:hover, .nav-drawer a.active { color: var(--blue); }
+.nav-drawer-cta {
+  margin-top: 12px; display: block; text-align: center;
+  font-weight: 500; font-size: 14px; color: #fff !important;
+  background: var(--blue); padding: 12px; border-bottom: none !important;
+}
+
+/* ═══════════════════════════════════════
+   HERO
+═══════════════════════════════════════ */
+.hero {
+  min-height: 100vh; display: flex; flex-direction: column;
+  justify-content: center; padding: 100px 48px 80px;
+  position: relative; overflow: hidden;
+}
+.hero-dot-grid {
+  position: absolute; inset: 0;
+  background-image: radial-gradient(circle, var(--border-2) 1px, transparent 1px);
+  background-size: 28px 28px;
+  mask-image: radial-gradient(ellipse 60% 60% at 50% 40%, rgba(0,0,0,0.5) 0%, transparent 100%);
+  -webkit-mask-image: radial-gradient(ellipse 60% 60% at 50% 40%, rgba(0,0,0,0.5) 0%, transparent 100%);
+  pointer-events: none;
+}
+.hero-glow {
+  position: absolute; top: -10%; left: 50%; transform: translateX(-50%);
+  width: 700px; height: 500px;
+  background: radial-gradient(ellipse, rgba(43,91,232,0.07) 0%, transparent 65%);
+  pointer-events: none;
+}
+.hero-inner { max-width: 1080px; margin: 0 auto; width: 100%; position: relative; z-index: 2; }
+
+/* ═══════════════════════════════════════
+   SHARED COMPONENTS
+═══════════════════════════════════════ */
+.section-label {
+  display: flex; align-items: center; gap: 10px;
+  font-family: var(--font-mono); font-size: 10px; font-weight: 500;
+  letter-spacing: 0.12em; text-transform: uppercase;
+  color: var(--blue); margin-bottom: 28px;
+}
+.section-label::before {
+  content: ''; display: block; width: 20px; height: 1.5px;
+  background: var(--blue); flex-shrink: 0;
+}
+
+.hero-headline {
+  font-family: var(--font-sans); font-weight: 800;
+  font-size: clamp(52px, 7vw, 96px); line-height: 0.96;
+  letter-spacing: -0.04em; color: var(--text); margin-bottom: 28px;
+  opacity: 0; animation: fadeUp 0.9s ease 0.15s forwards;
+}
+.hero-headline em {
+  font-style: italic; font-family: var(--font-display);
+  font-weight: 400; color: var(--blue); letter-spacing: -0.02em;
+}
+.hero-sub {
+  font-size: 17px; color: var(--text-2); max-width: 500px;
+  line-height: 1.7; margin-bottom: 44px;
+  opacity: 0; animation: fadeUp 0.9s ease 0.3s forwards;
+}
+.hero-buttons {
+  display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 72px;
+  opacity: 0; animation: fadeUp 0.9s ease 0.45s forwards;
+}
+.btn-primary {
+  font-family: var(--font-sans); font-size: 14px; font-weight: 500;
+  color: #fff; background: var(--blue); padding: 13px 28px;
+  text-decoration: none; border: 1.5px solid var(--blue);
+  cursor: pointer; transition: all 0.2s; display: inline-block;
+}
+.btn-primary:hover { background: var(--blue-h); border-color: var(--blue-h); transform: translateY(-2px); box-shadow: 0 8px 24px rgba(43,91,232,0.25); }
+.btn-outline {
+  font-family: var(--font-sans); font-size: 14px; font-weight: 500;
+  color: var(--text-2); background: transparent; padding: 13px 28px;
+  text-decoration: none; border: 1.5px solid var(--border-2);
+  cursor: pointer; transition: all 0.2s; display: inline-block;
+}
+.btn-outline:hover { border-color: var(--text-2); color: var(--text); }
+
+.hero-stats {
+  display: flex; border-top: 1px solid var(--border); padding-top: 40px;
+  opacity: 0; animation: fadeUp 0.9s ease 0.6s forwards;
+}
+.hero-stat { flex: 1; padding-right: 40px; border-right: 1px solid var(--border); margin-right: 40px; }
+.hero-stat:last-child { border-right: none; margin-right: 0; padding-right: 0; }
+.stat-num { font-family: var(--font-sans); font-weight: 800; font-size: 36px; letter-spacing: -0.04em; color: var(--text); line-height: 1; margin-bottom: 6px; }
+.stat-num span { color: var(--blue); }
+.stat-label { font-size: 12px; color: var(--text-3); line-height: 1.5; max-width: 160px; }
+
+@keyframes fadeUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+
+/* ═══════════════════════════════════════
+   SECTIONS
+═══════════════════════════════════════ */
+.section { padding: 112px 48px; max-width: 1080px; margin: 0 auto; }
+.section-alt { background: var(--bg-2); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); transition: background 0.3s; }
+.section-alt-inner { max-width: 1080px; margin: 0 auto; padding: 112px 48px; }
+.section-header { margin-bottom: 64px; }
+.section-headline { font-family: var(--font-sans); font-weight: 800; font-size: clamp(30px, 3.5vw, 48px); letter-spacing: -0.035em; color: var(--text); line-height: 1.05; margin-bottom: 16px; }
+.section-body { font-size: 16px; color: var(--text-2); line-height: 1.75; max-width: 480px; }
+.divider { height: 1px; background: var(--border); }
+
+/* Reveal */
+.reveal { opacity: 0; transform: translateY(20px); transition: opacity 0.6s ease, transform 0.6s ease; }
+.reveal.visible { opacity: 1; transform: translateY(0); }
+.reveal-delay-1 { transition-delay: 0.1s; }
+
+/* ═══════════════════════════════════════
+   PROBLEM
+═══════════════════════════════════════ */
+.problem-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1px; background: var(--border); border: 1px solid var(--border); }
+.problem-card { background: var(--surface); padding: 44px 40px; position: relative; overflow: hidden; transition: background 0.2s; }
+.problem-card::before { content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 3px; background: var(--blue); transform: scaleY(0); transform-origin: bottom; transition: transform 0.35s ease; }
+.problem-card:hover::before { transform: scaleY(1); }
+.problem-card:hover { background: var(--bg-2); }
+.problem-num { font-family: var(--font-mono); font-size: 11px; color: var(--text-3); letter-spacing: 0.1em; margin-bottom: 20px; }
+.problem-title { font-family: var(--font-sans); font-weight: 700; font-size: 17px; color: var(--text); margin-bottom: 10px; letter-spacing: -0.02em; line-height: 1.3; }
+.problem-text { font-size: 14px; color: var(--text-2); line-height: 1.7; }
+
+/* ═══════════════════════════════════════
+   HOW IT WORKS
+═══════════════════════════════════════ */
+.hiw-steps { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0; position: relative; margin-top: 64px; }
+.hiw-line { position: absolute; top: 22px; left: 28px; right: 28px; height: 1px; background: var(--border-2); z-index: 0; }
+.hiw-step { padding: 0 28px 0 0; position: relative; z-index: 1; }
+.hiw-step:last-child { padding-right: 0; }
+.hiw-dot { width: 10px; height: 10px; border-radius: 50%; background: var(--blue); margin-bottom: 28px; position: relative; z-index: 2; box-shadow: 0 0 0 4px var(--blue-pale); }
+.hiw-step-num { font-family: var(--font-mono); font-size: 10px; font-weight: 500; letter-spacing: 0.1em; color: var(--blue); margin-bottom: 12px; }
+.hiw-glyph { margin-bottom: 14px; display: block; width: 22px; height: 22px; }
+.hiw-glyph svg { width: 22px; height: 22px; stroke: var(--text-2); stroke-width: 1.5; fill: none; stroke-linecap: round; stroke-linejoin: round; }
+.hiw-title { font-family: var(--font-sans); font-weight: 700; font-size: 15px; color: var(--text); margin-bottom: 8px; letter-spacing: -0.02em; line-height: 1.3; }
+.hiw-text { font-size: 13px; color: var(--text-2); line-height: 1.65; }
+
+/* ═══════════════════════════════════════
+   FEATURES
+═══════════════════════════════════════ */
+.features-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1px; background: var(--border); border: 1px solid var(--border); margin-top: 64px; }
+.feature-card { background: var(--surface); padding: 36px 32px; transition: background 0.2s; }
+.feature-card:hover { background: var(--bg-2); }
+.feature-icon { margin-bottom: 20px; display: block; width: 20px; height: 20px; }
+.feature-icon svg { width: 20px; height: 20px; stroke: var(--text-2); stroke-width: 1.5; fill: none; stroke-linecap: round; stroke-linejoin: round; }
+.feature-title { font-family: var(--font-sans); font-weight: 700; font-size: 15px; color: var(--text); margin-bottom: 8px; letter-spacing: -0.02em; }
+.feature-text { font-size: 13px; color: var(--text-2); line-height: 1.65; margin-bottom: 16px; }
+.feature-tag { display: inline-block; font-family: var(--font-mono); font-size: 9px; font-weight: 500; letter-spacing: 0.08em; text-transform: uppercase; padding: 3px 8px; border-radius: 2px; }
+.tag-live   { color: var(--blue); background: var(--blue-pale); border: 1px solid var(--blue-mid); }
+.tag-dev    { color: var(--text-2); background: var(--bg-2); border: 1px solid var(--border-2); }
+.tag-road   { color: var(--text-3); background: transparent; border: 1px solid var(--border-2); }
+.tag-vision { color: var(--text-3); opacity: 0.7; background: transparent; border: 1px solid var(--border); }
+
+/* ═══════════════════════════════════════
+   ROADMAP
+═══════════════════════════════════════ */
+.roadmap-track { margin-top: 72px; position: relative; }
+.roadmap-timeline-row { display: grid; grid-template-columns: repeat(5, 1fr); position: relative; margin-bottom: 40px; }
+.roadmap-bg-line { position: absolute; top: 16px; left: 16px; right: 16px; height: 1px; background: var(--border-2); }
+.roadmap-progress-line { position: absolute; top: 16px; left: 16px; width: calc(20% + 16px); height: 1px; background: var(--blue); }
+.roadmap-dot-col { display: flex; flex-direction: column; align-items: center; position: relative; z-index: 2; }
+.rm-dot { width: 14px; height: 14px; border-radius: 50%; flex-shrink: 0; }
+.rm-dot.done   { background: var(--blue); box-shadow: 0 0 0 3px var(--blue-pale); }
+.rm-dot.active { background: var(--surface); border: 2px solid var(--blue); box-shadow: 0 0 0 5px var(--blue-pale); animation: rmPulse 2s ease-in-out infinite; }
+.rm-dot.future { background: var(--surface); border: 1.5px solid var(--text-3); }
+@keyframes rmPulse { 0%,100% { box-shadow: 0 0 0 5px rgba(43,91,232,0.12); } 50% { box-shadow: 0 0 0 9px rgba(43,91,232,0.05); } }
+.roadmap-cards { display: grid; grid-template-columns: repeat(5, 1fr); gap: 1px; background: var(--border); border: 1px solid var(--border); }
+.rm-card { background: var(--surface); padding: 28px 24px; transition: background 0.3s; }
+.rm-card.active-card { background: var(--blue-pale); }
+.rm-phase { font-family: var(--font-mono); font-size: 9px; font-weight: 500; letter-spacing: 0.12em; text-transform: uppercase; margin-bottom: 10px; }
+.rm-phase.done, .rm-phase.active { color: var(--blue); }
+.rm-phase.future { color: var(--text-3); }
+.rm-title { font-family: var(--font-sans); font-weight: 700; font-size: 13px; color: var(--text); margin-bottom: 14px; letter-spacing: -0.02em; line-height: 1.3; }
+.rm-title.muted { color: var(--text-3); }
+.rm-list { list-style: none; display: flex; flex-direction: column; gap: 6px; }
+.rm-list li { font-size: 11px; color: var(--text-2); line-height: 1.5; display: flex; align-items: flex-start; gap: 6px; }
+.rm-list li::before { content: '·'; color: var(--text-3); flex-shrink: 0; }
+.rm-list li.done-item { color: var(--text-3); }
+.rm-list li.done-item::before { content: '✓'; color: var(--blue); font-size: 9px; margin-top: 2px; }
+.rm-badge { display: inline-block; margin-top: 14px; font-family: var(--font-mono); font-size: 8px; font-weight: 500; letter-spacing: 0.1em; text-transform: uppercase; padding: 3px 8px; border-radius: 2px; }
+.rm-badge.now  { color: var(--blue); background: var(--blue-pale); border: 1px solid var(--blue-mid); }
+.rm-badge.soon { color: var(--text-3); background: transparent; border: 1px solid var(--border-2); }
+
+/* ═══════════════════════════════════════
+   WHO IT'S FOR
+═══════════════════════════════════════ */
+.vp-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0; margin-top: 64px; border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); }
+.vp-col { padding: 48px 40px 48px 0; border-right: 1px solid var(--border); }
+.vp-col:first-child { padding-left: 0; }
+.vp-col:last-child  { border-right: none; padding-right: 0; padding-left: 40px; }
+.vp-col:nth-child(2){ padding-left: 40px; }
+.vp-audience { font-family: var(--font-mono); font-size: 10px; font-weight: 500; letter-spacing: 0.12em; text-transform: uppercase; color: var(--blue); margin-bottom: 16px; display: flex; align-items: center; gap: 8px; }
+.vp-audience::before { content: ''; display: block; width: 14px; height: 1.5px; background: var(--blue); }
+.vp-title { font-family: var(--font-sans); font-weight: 800; font-size: 20px; letter-spacing: -0.03em; color: var(--text); margin-bottom: 20px; line-height: 1.2; }
+.vp-list { list-style: none; display: flex; flex-direction: column; gap: 10px; }
+.vp-list li { font-size: 13px; color: var(--text-2); line-height: 1.6; display: flex; align-items: flex-start; gap: 8px; }
+.vp-list li::before { content: '→'; color: var(--blue); font-size: 11px; flex-shrink: 0; margin-top: 2px; }
+
+/* ═══════════════════════════════════════
+   CTA
+═══════════════════════════════════════ */
+.cta-section {
+  background: var(--cta-bg); padding: 140px 48px; text-align: center;
+  position: relative; overflow: hidden; border-top: 1px solid var(--border);
+}
+.cta-section::before { content: ''; position: absolute; top: -200px; left: 50%; transform: translateX(-50%); width: 600px; height: 400px; background: radial-gradient(ellipse, rgba(74,122,255,0.12) 0%, transparent 70%); pointer-events: none; }
+.cta-inner { position: relative; z-index: 2; }
+.cta-label { display: flex; align-items: center; justify-content: center; gap: 10px; font-family: var(--font-mono); font-size: 10px; font-weight: 500; letter-spacing: 0.12em; text-transform: uppercase; color: var(--blue); margin-bottom: 28px; }
+.cta-label::before { content: ''; display: block; width: 20px; height: 1.5px; background: var(--blue); }
+.cta-headline { font-family: var(--font-sans); font-weight: 800; font-size: clamp(36px, 5vw, 64px); letter-spacing: -0.04em; color: var(--cta-text); line-height: 1.0; margin-bottom: 20px; }
+.cta-sub { font-size: 16px; color: var(--cta-sub); margin-bottom: 44px; line-height: 1.7; }
+.cta-buttons { display: flex; align-items: center; justify-content: center; gap: 12px; flex-wrap: wrap; }
+.btn-white-outline { font-family: var(--font-sans); font-size: 14px; font-weight: 500; color: rgba(255,255,255,0.65); background: transparent; padding: 13px 28px; border: 1.5px solid rgba(255,255,255,0.18); text-decoration: none; display: inline-block; transition: all 0.2s; }
+.btn-white-outline:hover { color: #fff; border-color: rgba(255,255,255,0.5); }
+.cta-note { margin-top: 28px; font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.08em; color: rgba(255,255,255,0.25); }
+
+/* ═══════════════════════════════════════
+   FOOTER
+═══════════════════════════════════════ */
+footer { border-top: 1px solid var(--border); padding: 28px 48px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 16px; }
+.footer-logo { font-family: var(--font-sans); font-weight: 700; font-size: 15px; letter-spacing: -0.3px; color: var(--text); display: flex; align-items: center; gap: 8px; text-decoration: none; }
+.footer-copy { font-family: var(--font-mono); font-size: 10px; color: var(--text-3); letter-spacing: 0.04em; }
+.footer-links { display: flex; gap: 20px; list-style: none; }
+.footer-links a { font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--text-3); text-decoration: none; transition: color 0.2s; }
+.footer-links a:hover { color: var(--blue); }
+
+/* ═══════════════════════════════════════
+   RESPONSIVE BREAKPOINTS
+═══════════════════════════════════════ */
+
+/* ── Tablet: 1024px ── */
+@media (max-width: 1024px) {
+  nav { padding: 0 32px; }
+  .nav-links { gap: 20px; }
+  .hero, .section { padding-left: 32px; padding-right: 32px; }
+  .section-alt-inner { padding-left: 32px; padding-right: 32px; }
+  .features-grid { grid-template-columns: 1fr 1fr; }
+}
+
+/* ── Tablet portrait / large mobile: 768px ── */
+@media (max-width: 768px) {
+  nav { padding: 0 20px; }
+
+  /* Hide desktop links and CTA, show hamburger */
+  .nav-links { display: none; }
+  .nav-cta   { display: none; }
+  .nav-hamburger { display: flex; }
+
+  .hero { padding: 100px 20px 60px; }
+  .hero-headline { font-size: clamp(40px, 10vw, 64px); }
+  .hero-stats { flex-direction: column; gap: 24px; }
+  .hero-stat { border-right: none; border-bottom: 1px solid var(--border); padding-bottom: 24px; margin-right: 0; padding-right: 0; }
+  .hero-stat:last-child { border-bottom: none; padding-bottom: 0; }
+
+  .section { padding: 72px 20px; }
+  .section-alt-inner { padding: 72px 20px; }
+  .section-header { margin-bottom: 40px; }
+
+  .problem-grid { grid-template-columns: 1fr; }
+  .hiw-steps { grid-template-columns: 1fr 1fr; gap: 32px; margin-top: 40px; }
+  .hiw-line { display: none; }
+  .features-grid { grid-template-columns: 1fr 1fr; }
+  .roadmap-timeline-row { display: none; }
+  .roadmap-cards { grid-template-columns: 1fr 1fr; }
+  .vp-grid { grid-template-columns: 1fr; border: none; }
+  .vp-col { padding: 32px 0; border-right: none; border-bottom: 1px solid var(--border); }
+  .vp-col:last-child { border-bottom: none; }
+  .vp-col:nth-child(2) { padding-left: 0; }
+
+  .cta-section { padding: 80px 20px; }
+  footer { padding: 24px 20px; flex-direction: column; align-items: flex-start; }
+}
+
+/* ── Small mobile: 480px ── */
+@media (max-width: 480px) {
+  .hero-buttons { flex-direction: column; }
+  .btn-primary, .btn-outline { width: 100%; text-align: center; }
+  .hiw-steps { grid-template-columns: 1fr; }
+  .features-grid { grid-template-columns: 1fr; }
+  .roadmap-cards { grid-template-columns: 1fr; }
+  .cta-buttons { flex-direction: column; align-items: stretch; }
+  .btn-white-outline { text-align: center; }
+}
+</style>
+</head>
+<body>
+
+<!-- ═══ NAV ═══ -->
+<nav>
+  <a href="#" class="nav-logo">
+    <div class="logo-icon"><div class="logo-ring"></div><div class="logo-dot"></div></div>
+    RELAY
+  </a>
+
+  <ul class="nav-links" id="navLinks">
+    <li><a href="#problem">Problem</a></li>
+    <li><a href="#how">How It Works</a></li>
+    <li><a href="#features">Features</a></li>
+    <li><a href="#roadmap">Roadmap</a></li>
+    <li><a href="#who">Who It's For</a></li>
+  </ul>
+
+  <div class="nav-right">
+    <!-- Theme toggle -->
+    <button class="theme-toggle" id="themeToggle" aria-label="Toggle theme">
+      <!-- Sun icon (shown in light mode) -->
+      <svg class="icon-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+      <!-- Moon icon (shown in dark mode) -->
+      <svg class="icon-moon" viewBox="0 0 24 24"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+    </button>
+
+    <a href="#contact" class="nav-cta">Request Access</a>
+
+    <!-- Hamburger (mobile only) -->
+    <button class="nav-hamburger" id="hamburger" aria-label="Open menu">
+      <span></span><span></span><span></span>
+    </button>
+  </div>
+</nav>
+
+<!-- Mobile drawer -->
+<div class="nav-drawer" id="navDrawer">
+  <a href="#problem"  class="drawer-link">Problem</a>
+  <a href="#how"      class="drawer-link">How It Works</a>
+  <a href="#features" class="drawer-link">Features</a>
+  <a href="#roadmap"  class="drawer-link">Roadmap</a>
+  <a href="#who"      class="drawer-link">Who It's For</a>
+  <a href="#contact"  class="drawer-link nav-drawer-cta">Request Access</a>
+</div>
+
+<!-- ═══ HERO ═══ -->
+<section class="hero" id="hero">
+  <div class="hero-dot-grid"></div>
+  <div class="hero-glow"></div>
+  <div class="hero-inner">
+    <div class="section-label" style="opacity:0;animation:fadeUp 0.8s ease 0s forwards">Early Access · AI Voice Infrastructure</div>
+    <h1 class="hero-headline">Every hold,<br><em>handled.</em></h1>
+    <p class="hero-sub">Relay deploys an AI voice agent the moment a customer is placed on hold — collecting intake, answering questions, and delivering a structured handoff brief to your agent at connection.</p>
+    <div class="hero-buttons">
+      <a href="#contact" class="btn-primary">Request Early Access</a>
+      <a href="#how" class="btn-outline">See How It Works</a>
+    </div>
+    <div class="hero-stats">
+      <div class="hero-stat">
+        <div class="stat-num"><span>68</span>%</div>
+        <div class="stat-label">of customers hang up before an agent answers</div>
+      </div>
+      <div class="hero-stat">
+        <div class="stat-num">13 <span style="font-size:22px">min</span></div>
+        <div class="stat-label">average hold time across contact centers</div>
+      </div>
+      <div class="hero-stat">
+        <div class="stat-num"><span>0</span> sec</div>
+        <div class="stat-label">of hold time currently used to collect intake</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ═══ PROBLEM ═══ -->
+<section id="problem">
+  <div class="section">
+    <div class="section-header reveal">
+      <div class="section-label">The Problem</div>
+      <h2 class="section-headline">Hold time is dead air.<br>It doesn't have to be.</h2>
+      <p class="section-body">Every minute on hold is unproductive for the customer and costly for your operation. When an agent finally connects, they start from zero.</p>
+    </div>
+    <div class="problem-grid reveal reveal-delay-1">
+      <div class="problem-card">
+        <div class="problem-num">01</div>
+        <div class="problem-title">The repeat explanation tax</div>
+        <div class="problem-text">Customers re-explain their issue to every touchpoint — IVR, agent, escalation. Each handoff erases context and burns time. Agents start cold on every call.</div>
+      </div>
+      <div class="problem-card">
+        <div class="problem-num">02</div>
+        <div class="problem-title">Hold time is a black hole</div>
+        <div class="problem-text">13 minutes of average hold time generates zero business value today. Customers disengage, abandonment climbs, and there's no mechanism to capture intent during the wait.</div>
+      </div>
+      <div class="problem-card">
+        <div class="problem-num">03</div>
+        <div class="problem-title">Agents inherit chaos</div>
+        <div class="problem-text">When connection finally happens, agents scramble — account lookup, reason for call, urgency level. The first few minutes of every call are pure administrative overhead.</div>
+      </div>
+      <div class="problem-card">
+        <div class="problem-num">04</div>
+        <div class="problem-title">AHT is a blunt lever</div>
+        <div class="problem-text">Average Handle Time is the core efficiency metric. Most reduction efforts focus on post-connection speed. Relay attacks the pre-connection window nobody else has touched.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ HOW IT WORKS ═══ -->
+<div class="section-alt" id="how">
+  <div class="section-alt-inner">
+    <div class="section-header reveal">
+      <div class="section-label">How It Works</div>
+      <h2 class="section-headline">Four steps. Zero friction.</h2>
+      <p class="section-body">Relay intercepts hold time the moment it starts — no change to your existing call flow, no new hardware required.</p>
+    </div>
+    <div style="position:relative">
+      <div class="hiw-line"></div>
+      <div class="hiw-steps reveal reveal-delay-1">
+        <div class="hiw-step">
+          <div class="hiw-dot"></div>
+          <div class="hiw-step-num">01</div>
+          <span class="hiw-glyph"><svg viewBox="0 0 24 24"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12a19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 3.6 1.27h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 8.91a16 16 0 0 0 6.1 6.1l.91-.91a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg></span>
+          <div class="hiw-title">Customer calls in</div>
+          <div class="hiw-text">Your existing IVR routes the call as normal. When the customer enters a hold queue, Relay activates automatically via Twilio.</div>
+        </div>
+        <div class="hiw-step">
+          <div class="hiw-dot"></div>
+          <div class="hiw-step-num">02</div>
+          <span class="hiw-glyph"><svg viewBox="0 0 24 24"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="22"/><line x1="8" y1="22" x2="16" y2="22"/></svg></span>
+          <div class="hiw-title">Relay takes the hold</div>
+          <div class="hiw-text">Our AI voice agent greets the caller, confirms their reason for calling, and collects structured intake through natural conversation.</div>
+        </div>
+        <div class="hiw-step">
+          <div class="hiw-dot"></div>
+          <div class="hiw-step-num">03</div>
+          <span class="hiw-glyph"><svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></span>
+          <div class="hiw-title">Brief is generated</div>
+          <div class="hiw-text">Relay compiles a structured handoff brief — issue category, urgency, account details, and sentiment — ready at connection.</div>
+        </div>
+        <div class="hiw-step">
+          <div class="hiw-dot"></div>
+          <div class="hiw-step-num">04</div>
+          <span class="hiw-glyph"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></span>
+          <div class="hiw-title">Agent connects, informed</div>
+          <div class="hiw-text">At connection, the brief surfaces instantly. The agent already knows who they're talking to and why. The call starts at resolution.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ FEATURES ═══ -->
+<section id="features">
+  <div class="section">
+    <div class="section-header reveal">
+      <div class="section-label">Features</div>
+      <h2 class="section-headline">Built for production-grade<br>contact center environments.</h2>
+    </div>
+    <div class="features-grid reveal reveal-delay-1">
+      <div class="feature-card">
+        <span class="feature-icon"><svg viewBox="0 0 24 24"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="22"/><line x1="8" y1="22" x2="16" y2="22"/></svg></span>
+        <div class="feature-title">Realtime Voice AI</div>
+        <div class="feature-text">Powered by OpenAI's Realtime API with ultra-low latency. Natural, conversational — callers feel heard from the first second.</div>
+        <span class="feature-tag tag-live">Live</span>
+      </div>
+      <div class="feature-card">
+        <span class="feature-icon"><svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg></span>
+        <div class="feature-title">Structured Handoff Briefs</div>
+        <div class="feature-text">Every call produces a brief: intent, account info, issue category, urgency score, and summary — delivered at agent connection.</div>
+        <span class="feature-tag tag-dev">In Development</span>
+      </div>
+      <div class="feature-card">
+        <span class="feature-icon"><svg viewBox="0 0 24 24"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12a19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 3.6 1.27h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 8.91a16 16 0 0 0 6.1 6.1l.91-.91a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg></span>
+        <div class="feature-title">Twilio Integration</div>
+        <div class="feature-text">Built natively on Twilio's voice infrastructure. Plugs into existing call center stacks with no telephony changes required.</div>
+        <span class="feature-tag tag-live">Live</span>
+      </div>
+      <div class="feature-card">
+        <span class="feature-icon"><svg viewBox="0 0 24 24"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg></span>
+        <div class="feature-title">Brief Email Delivery</div>
+        <div class="feature-text">Briefs delivered to agent dashboards and supervisors via email at moment of connection — powered by Resend.</div>
+        <span class="feature-tag tag-dev">In Development</span>
+      </div>
+      <div class="feature-card">
+        <span class="feature-icon"><svg viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg></span>
+        <div class="feature-title">Opt-Out & Compliance</div>
+        <div class="feature-text">Callers can exit the AI session at any moment. Full disclosure framing and configurable recording policies built in.</div>
+        <span class="feature-tag tag-dev">In Development</span>
+      </div>
+      <div class="feature-card">
+        <span class="feature-icon"><svg viewBox="0 0 24 24"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg></span>
+        <div class="feature-title">AHT Analytics Dashboard</div>
+        <div class="feature-text">Track handle time reduction, call abandonment rates, intake accuracy, and agent ramp time across every session.</div>
+        <span class="feature-tag tag-road">Roadmap Q3</span>
+      </div>
+      <div class="feature-card">
+        <span class="feature-icon"><svg viewBox="0 0 24 24"><polyline points="16 3 21 3 21 8"/><line x1="4" y1="20" x2="21" y2="3"/><polyline points="21 16 21 21 16 21"/><line x1="15" y1="15" x2="21" y2="21"/></svg></span>
+        <div class="feature-title">CRM Webhooks</div>
+        <div class="feature-text">Structured brief data pushed to Salesforce, Zendesk, ServiceNow, or any CRM via webhook. No manual data entry.</div>
+        <span class="feature-tag tag-road">Roadmap Q4</span>
+      </div>
+      <div class="feature-card">
+        <span class="feature-icon"><svg viewBox="0 0 24 24"><rect x="5" y="2" width="14" height="20" rx="2" ry="2"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg></span>
+        <div class="feature-title">SMS Hold Confirmation</div>
+        <div class="feature-text">Send callers an SMS with estimated wait time and a link to continue intake on mobile — reducing abandonment further.</div>
+        <span class="feature-tag tag-road">Roadmap Q4</span>
+      </div>
+      <div class="feature-card">
+        <span class="feature-icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M12 1v4M12 19v4M4.22 4.22l2.83 2.83M16.95 16.95l2.83 2.83M1 12h4M19 12h4M4.22 19.78l2.83-2.83M16.95 7.05l2.83-2.83"/></svg></span>
+        <div class="feature-title">Pattern Intelligence</div>
+        <div class="feature-text">Relay learns from every brief — surfacing recurring issues, predicting caller intent, and resolving common queries autonomously.</div>
+        <span class="feature-tag tag-vision">Long-Term Vision</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ ROADMAP ═══ -->
+<div class="section-alt" id="roadmap">
+  <div class="section-alt-inner">
+    <div class="section-header reveal">
+      <div class="section-label">Roadmap</div>
+      <h2 class="section-headline">Where we are.<br>Where we're going.</h2>
+      <p class="section-body">Relay is in active development. Core pipeline is functional — hardening the product and signing first design partners now.</p>
+    </div>
+    <div class="roadmap-track reveal reveal-delay-1">
+      <div class="roadmap-timeline-row">
+        <div class="roadmap-bg-line"></div>
+        <div class="roadmap-progress-line"></div>
+        <div class="roadmap-dot-col"><div class="rm-dot done"></div></div>
+        <div class="roadmap-dot-col"><div class="rm-dot active"></div></div>
+        <div class="roadmap-dot-col"><div class="rm-dot future"></div></div>
+        <div class="roadmap-dot-col"><div class="rm-dot future"></div></div>
+        <div class="roadmap-dot-col"><div class="rm-dot future"></div></div>
+      </div>
+      <div class="roadmap-cards">
+        <div class="rm-card">
+          <div class="rm-phase done">Phase 1 · Complete</div>
+          <div class="rm-title">Core Infrastructure</div>
+          <ul class="rm-list">
+            <li class="done-item">Twilio voice pipeline</li>
+            <li class="done-item">OpenAI Realtime API</li>
+            <li class="done-item">Redis session management</li>
+            <li class="done-item">Marketing site live</li>
+            <li class="done-item">NVBC application submitted</li>
+          </ul>
+        </div>
+        <div class="rm-card active-card">
+          <div class="rm-phase active">Phase 2 · Now</div>
+          <div class="rm-title">Product Completion</div>
+          <ul class="rm-list">
+            <li>Session state handling</li>
+            <li>Handoff brief generation</li>
+            <li>Email delivery via Resend</li>
+            <li>VAD & echo tuning</li>
+            <li>Opt-out flows</li>
+          </ul>
+          <div class="rm-badge now">In Progress</div>
+        </div>
+        <div class="rm-card">
+          <div class="rm-phase future">Phase 3 · Q3 2025</div>
+          <div class="rm-title muted">Design Partner Pilots</div>
+          <ul class="rm-list">
+            <li>2–3 pilot deployments</li>
+            <li>AHT measurement baseline</li>
+            <li>Agent dashboard v1</li>
+            <li>Feedback loop integration</li>
+          </ul>
+          <div class="rm-badge soon">Upcoming</div>
+        </div>
+        <div class="rm-card">
+          <div class="rm-phase future">Phase 4 · Q4 2025</div>
+          <div class="rm-title muted">Commercial Launch</div>
+          <ul class="rm-list">
+            <li>CRM webhook connectors</li>
+            <li>Analytics dashboard</li>
+            <li>Pricing tiers live</li>
+            <li>SMS hold UX</li>
+          </ul>
+          <div class="rm-badge soon">Upcoming</div>
+        </div>
+        <div class="rm-card">
+          <div class="rm-phase future">Phase 5 · 2026</div>
+          <div class="rm-title muted">Intelligent Resolution</div>
+          <ul class="rm-list">
+            <li>Pattern recognition engine</li>
+            <li>Intent prediction from caller ID</li>
+            <li>Autonomous resolution layer</li>
+            <li>Enterprise integrations</li>
+          </ul>
+          <div class="rm-badge soon">Vision</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ WHO IT'S FOR ═══ -->
+<section id="who">
+  <div class="section">
+    <div class="section-header reveal">
+      <div class="section-label">Who It's For</div>
+      <h2 class="section-headline">One platform.<br>Three stakeholders win.</h2>
+      <p class="section-body">Relay creates measurable value at every layer of the contact center ecosystem.</p>
+    </div>
+    <div class="vp-grid reveal reveal-delay-1">
+      <div class="vp-col">
+        <div class="vp-audience">Telecoms & Call Centers</div>
+        <div class="vp-title">Cut handle time. Increase throughput.</div>
+        <ul class="vp-list">
+          <li>Eliminate the intake phase from agent handle time</li>
+          <li>Lower call abandonment with an engaged hold experience</li>
+          <li>Agents connect fully briefed — resolution starts at second one</li>
+          <li>No infrastructure changes required</li>
+          <li>Measurable ROI from day one of deployment</li>
+        </ul>
+      </div>
+      <div class="vp-col">
+        <div class="vp-audience">Callers</div>
+        <div class="vp-title">Hold time that actually helps.</div>
+        <ul class="vp-list">
+          <li>Speak to someone from the moment hold begins</li>
+          <li>No repeating yourself when the agent connects</li>
+          <li>Faster resolution — agent already knows your issue</li>
+          <li>Opt out at any moment — always in control</li>
+          <li>A hold experience that respects your time</li>
+        </ul>
+      </div>
+      <div class="vp-col">
+        <div class="vp-audience">Supervisors & Ops</div>
+        <div class="vp-title">Visibility before the call begins.</div>
+        <ul class="vp-list">
+          <li>Structured briefs surface issue patterns across call volume</li>
+          <li>Identify recurring contact reasons — fix them upstream</li>
+          <li>Sentiment scoring flags at-risk calls before connection</li>
+          <li>Every session logged, exportable, and CRM-ready</li>
+          <li>Reduce agent training burden with richer pre-call context</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ CTA ═══ -->
+<section class="cta-section" id="contact">
+  <div class="cta-inner">
+    <div class="cta-label">Early Access</div>
+    <h2 class="cta-headline">Ready to reclaim<br>the hold window?</h2>
+    <p class="cta-sub">We're signing our first design partners now.<br>If you run a contact center — let's talk.</p>
+    <div class="cta-buttons">
+      <a href="mailto:hello@relaycalls.ai" class="btn-primary">Get in Touch</a>
+      <a href="https://www.getrelay.now" target="_blank" class="btn-white-outline">Visit getrelay.now ↗</a>
+    </div>
+    <p class="cta-note">No commitment required · Design partner slots limited · Built in Vancouver, BC</p>
+  </div>
+</section>
+
+<!-- ═══ FOOTER ═══ -->
+<footer>
+  <a href="#" class="footer-logo">
+    <div class="logo-icon" style="width:20px;height:20px"><div class="logo-ring" style="width:20px;height:20px"></div><div class="logo-dot" style="width:6px;height:6px"></div></div>
+    RELAY
+  </a>
+  <div class="footer-copy">© 2025 Relay Technologies Inc. · Vancouver, BC</div>
+  <ul class="footer-links">
+    <li><a href="mailto:hello@relaycalls.ai">Contact</a></li>
+    <li><a href="#roadmap">Roadmap</a></li>
+    <li><a href="https://www.getrelay.now" target="_blank">Live Site</a></li>
+  </ul>
+</footer>
+
+<script>
+/* ── Theme toggle ── */
+const html = document.documentElement;
+const toggle = document.getElementById('themeToggle');
+
+// Persist preference
+const saved = localStorage.getItem('relay-theme');
+if (saved) html.setAttribute('data-theme', saved);
+
+toggle.addEventListener('click', () => {
+  const next = html.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+  html.setAttribute('data-theme', next);
+  localStorage.setItem('relay-theme', next);
+});
+
+/* ── Hamburger menu ── */
+const hamburger = document.getElementById('hamburger');
+const drawer    = document.getElementById('navDrawer');
+
+hamburger.addEventListener('click', () => {
+  const open = drawer.classList.toggle('open');
+  hamburger.classList.toggle('open', open);
+  hamburger.setAttribute('aria-expanded', open);
+});
+
+// Close drawer when a link is clicked
+drawer.querySelectorAll('a').forEach(a => {
+  a.addEventListener('click', () => {
+    drawer.classList.remove('open');
+    hamburger.classList.remove('open');
+  });
+});
+
+// Close drawer on outside click
+document.addEventListener('click', e => {
+  if (!hamburger.contains(e.target) && !drawer.contains(e.target)) {
+    drawer.classList.remove('open');
+    hamburger.classList.remove('open');
+  }
+});
+
+/* ── Reveal on scroll ── */
+function checkReveals() {
+  document.querySelectorAll('.reveal').forEach(el => {
+    if (el.getBoundingClientRect().top < window.innerHeight + 100) {
+      el.classList.add('visible');
+    }
+  });
+}
+checkReveals();
+window.addEventListener('scroll', checkReveals, { passive: true });
+
+/* ── Active nav link ── */
+const sections  = ['problem','how','features','roadmap','who','contact'];
+const navLinks  = document.querySelectorAll('.nav-links a, .nav-drawer a');
+
+function updateActiveNav() {
+  let current = '';
+  sections.forEach(id => {
+    const el = document.getElementById(id);
+    if (el && window.scrollY >= el.offsetTop - 90) current = id;
+  });
+  navLinks.forEach(a => {
+    const href = a.getAttribute('href');
+    a.classList.toggle('active', href === '#' + current);
+  });
+}
+window.addEventListener('scroll', updateActiveNav, { passive: true });
+updateActiveNav();
+</script>
+</body>
+</html>
