@@ -55,6 +55,58 @@ export default function HomePage() {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
+  useEffect(() => {
+    const phrases = [
+      "Every hold,",
+      "Every caller,",
+      "Every intake,",
+      "Every wait,",
+      "Every handoff,",
+      "Dead air,",
+      "The hold window,"
+    ];
+
+    let i = 0;
+    let chars = 0;
+    let deleting = false;
+    let timeoutId: ReturnType<typeof setTimeout>;
+
+    const tick = () => {
+      const el = document.getElementById('typewriter');
+      if (!el) return;
+
+      const phrase = phrases[i];
+      if (!deleting) {
+        chars++;
+        el.textContent = phrase.slice(0, chars);
+        if (chars === phrase.length) {
+          deleting = true;
+          timeoutId = setTimeout(tick, 2000);
+          return;
+        }
+        timeoutId = setTimeout(tick, 60);
+      } else {
+        chars--;
+        el.textContent = phrase.slice(0, chars);
+        if (chars === 0) {
+          deleting = false;
+          i = (i + 1) % phrases.length;
+          timeoutId = setTimeout(tick, 400);
+          return;
+        }
+        timeoutId = setTimeout(tick, 35);
+      }
+    };
+
+    // Start typewriter after hero fade-in completes (~1100ms)
+    const startTimeout = setTimeout(tick, 1100);
+
+    return () => {
+      clearTimeout(startTimeout);
+      clearTimeout(timeoutId);
+    };
+  }, []);
+
   const toggleTheme = () => {
     const newTheme = theme === 'light' ? 'dark' : 'light';
     setTheme(newTheme);
@@ -112,6 +164,10 @@ export default function HomePage() {
           0%, 100% { box-shadow: 0 0 0 5px rgba(43,91,232,0.12); }
           50% { box-shadow: 0 0 0 9px rgba(43,91,232,0.05); }
         }
+        @keyframes blink {
+          0%, 100% { opacity: 1; }
+          50% { opacity: 0; }
+        }
         .reveal {
           opacity: 0;
           transform: translateY(20px);
@@ -123,6 +179,15 @@ export default function HomePage() {
         }
         .reveal-delay-1 {
           transition-delay: 0.1s;
+        }
+        .cursor {
+          display: inline-block;
+          width: 3px;
+          height: 0.85em;
+          background: ${colors.blue};
+          margin-left: 2px;
+          vertical-align: middle;
+          animation: blink 530ms step-end infinite;
         }
       `}</style>
 
@@ -464,9 +529,10 @@ export default function HomePage() {
             color: colors.text,
             marginBottom: '28px',
             opacity: 0,
-            animation: 'fadeUp 0.9s ease 0.15s forwards'
+            animation: 'fadeUp 0.9s ease 0.15s forwards',
+            minHeight: 'calc(0.96 * 2 * clamp(52px, 7vw, 96px))'
           }}>
-            Every hold,<br />
+            <span id="typewriter"></span><span className="cursor"></span><br />
             <em style={{
               fontStyle: 'italic',
               fontFamily: 'Instrument Serif, serif',

@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { Sun, Moon, ArrowLeft, Check, ChevronDown } from 'lucide-react';
+import { Sun, Moon, ArrowLeft, Check, ChevronDown, Menu, X } from 'lucide-react';
 
 export default function Contact() {
   const [theme, setTheme] = useState<'light' | 'dark'>('light');
   const [formSubmitted, setFormSubmitted] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [formData, setFormData] = useState({
     firstName: '',
     lastName: '',
@@ -30,6 +31,7 @@ export default function Contact() {
 
   const colors = theme === 'light' ? {
     bg: '#ffffff',
+    bg2: '#f5f5f5',
     text: '#0a0a0f',
     text2: '#6b6b7b',
     text3: '#9a9aaa',
@@ -41,6 +43,7 @@ export default function Contact() {
     navBorder: '#e5e5ea',
   } : {
     bg: '#0a0a0f',
+    bg2: '#1a1a1f',
     text: '#f0f0f4',
     text2: '#a0a0b0',
     text3: '#505060',
@@ -173,26 +176,38 @@ ${formData.notes || 'None'}
           RELAY
         </a>
 
-        {/* Right Side */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-          <a
-            href="/"
-            style={{
-              fontSize: '13px',
-              color: colors.text2,
-              textDecoration: 'none',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '6px',
-              transition: 'color 0.2s'
-            }}
-            onMouseEnter={(e) => e.currentTarget.style.color = colors.text}
-            onMouseLeave={(e) => e.currentTarget.style.color = colors.text2}
-          >
-            <ArrowLeft size={14} />
-            Back to Home
-          </a>
+        {/* Desktop Nav Links */}
+        <ul className="hidden md:flex" style={{ display: 'flex', gap: '28px', listStyle: 'none', alignItems: 'center' }}>
+          {[
+            { href: '/#problem', label: 'Problem' },
+            { href: '/#how', label: 'How It Works' },
+            { href: '/#features', label: 'Features' },
+            { href: '/#roadmap', label: 'Roadmap' },
+            { href: '/#who', label: "Who It's For" }
+          ].map(link => (
+            <li key={link.href}>
+              <a
+                href={link.href}
+                style={{
+                  fontSize: '13px',
+                  color: colors.text2,
+                  textDecoration: 'none',
+                  transition: 'color 0.2s',
+                  whiteSpace: 'nowrap',
+                  fontWeight: 400,
+                  cursor: 'pointer'
+                }}
+                onMouseEnter={(e) => e.currentTarget.style.color = colors.text}
+                onMouseLeave={(e) => e.currentTarget.style.color = colors.text2}
+              >
+                {link.label}
+              </a>
+            </li>
+          ))}
+        </ul>
 
+        {/* Right Side */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flexShrink: 0 }}>
           {/* Theme Toggle */}
           <button
             onClick={toggleTheme}
@@ -210,7 +225,7 @@ ${formData.notes || 'None'}
               color: colors.text2
             }}
             onMouseEnter={(e) => {
-              e.currentTarget.style.background = colors.bg;
+              e.currentTarget.style.background = colors.bg2 || colors.bg;
               e.currentTarget.style.color = colors.text;
             }}
             onMouseLeave={(e) => {
@@ -220,8 +235,147 @@ ${formData.notes || 'None'}
           >
             {theme === 'light' ? <Sun size={16} /> : <Moon size={16} />}
           </button>
+
+          {/* CTA */}
+          <a
+            href="/contact"
+            className="hidden md:inline-flex"
+            style={{
+              fontFamily: 'Geist, sans-serif',
+              fontSize: '13px',
+              fontWeight: 500,
+              color: '#fff',
+              background: colors.blue,
+              padding: '8px 18px',
+              textDecoration: 'none',
+              border: 'none',
+              cursor: 'pointer',
+              transition: 'background 0.2s, transform 0.15s',
+              whiteSpace: 'nowrap'
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.background = colors.blueH;
+              e.currentTarget.style.transform = 'translateY(-1px)';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.background = colors.blue;
+              e.currentTarget.style.transform = 'translateY(0)';
+            }}
+          >
+            Request Access
+          </a>
+
+          {/* Hamburger */}
+          <button
+            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            className="md:hidden"
+            style={{
+              display: 'none',
+              width: '36px',
+              height: '36px',
+              background: 'transparent',
+              border: `1px solid ${colors.border2}`,
+              cursor: 'pointer',
+              borderRadius: '6px',
+              flexDirection: 'column',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: '5px'
+            }}
+          >
+            <span style={{
+              display: 'block',
+              width: '18px',
+              height: '1.5px',
+              background: colors.text2,
+              borderRadius: '2px',
+              transition: 'all 0.25s ease',
+              transform: mobileMenuOpen ? 'translateY(6.5px) rotate(45deg)' : 'none'
+            }} />
+            <span style={{
+              display: 'block',
+              width: '18px',
+              height: '1.5px',
+              background: colors.text2,
+              borderRadius: '2px',
+              transition: 'all 0.25s ease',
+              opacity: mobileMenuOpen ? 0 : 1,
+              transform: mobileMenuOpen ? 'scaleX(0)' : 'none'
+            }} />
+            <span style={{
+              display: 'block',
+              width: '18px',
+              height: '1.5px',
+              background: colors.text2,
+              borderRadius: '2px',
+              transition: 'all 0.25s ease',
+              transform: mobileMenuOpen ? 'translateY(-6.5px) rotate(-45deg)' : 'none'
+            }} />
+          </button>
         </div>
       </nav>
+
+      {/* Mobile Drawer */}
+      {mobileMenuOpen && (
+        <div style={{
+          position: 'fixed',
+          top: '60px',
+          left: 0,
+          right: 0,
+          zIndex: 299,
+          background: colors.navBg,
+          backdropFilter: 'blur(20px)',
+          WebkitBackdropFilter: 'blur(20px)',
+          borderBottom: `1px solid ${colors.navBorder}`,
+          padding: '16px 24px 24px',
+          display: 'flex',
+          flexDirection: 'column',
+          gap: '4px'
+        }}>
+          {[
+            { href: '/#problem', label: 'Problem' },
+            { href: '/#how', label: 'How It Works' },
+            { href: '/#features', label: 'Features' },
+            { href: '/#roadmap', label: 'Roadmap' },
+            { href: '/#who', label: "Who It's For" }
+          ].map(link => (
+            <a
+              key={link.href}
+              href={link.href}
+              onClick={() => setMobileMenuOpen(false)}
+              style={{
+                fontSize: '15px',
+                color: colors.text2,
+                textDecoration: 'none',
+                padding: '10px 0',
+                borderBottom: `1px solid ${colors.border}`,
+                transition: 'color 0.2s',
+                cursor: 'pointer'
+              }}
+            >
+              {link.label}
+            </a>
+          ))}
+          <a
+            href="/contact"
+            onClick={() => setMobileMenuOpen(false)}
+            style={{
+              marginTop: '12px',
+              display: 'block',
+              textAlign: 'center',
+              fontWeight: 500,
+              fontSize: '14px',
+              color: '#fff',
+              background: colors.blue,
+              padding: '12px',
+              borderBottom: 'none',
+              cursor: 'pointer'
+            }}
+          >
+            Request Access
+          </a>
+        </div>
+      )}
 
       {/* Main Content - Two Column Layout */}
       <div className="contact-layout" style={{ paddingTop: '60px', minHeight: 'calc(100vh - 60px)', display: 'flex' }}>
